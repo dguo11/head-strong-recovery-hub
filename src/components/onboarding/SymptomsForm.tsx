@@ -5,7 +5,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { LlmService } from '@/services/LlmService';
 import { useUser } from '@/context/UserContext';
@@ -112,7 +112,12 @@ export function SymptomsForm({ onComplete }: SymptomsFormProps) {
               <div className="space-y-2">
                 {analysisResults.extractedSymptoms.map((symptom: any, index: number) => (
                   <div key={index} className="p-3 bg-muted rounded-md">
-                    <div className="font-medium">{symptom.name}</div>
+                    <div className="font-medium flex items-center">
+                      {symptom.name}
+                      {analysisResults.redFlags && analysisResults.redFlags.includes(symptom.name) && (
+                        <AlertTriangle className="ml-2 h-4 w-4 text-destructive" />
+                      )}
+                    </div>
                     <div className="text-sm text-muted-foreground">
                       Estimated severity: {symptom.severity}/5 • Category: {symptom.possibleCategory}
                     </div>
@@ -120,6 +125,16 @@ export function SymptomsForm({ onComplete }: SymptomsFormProps) {
                 ))}
               </div>
             </div>
+            
+            {analysisResults.redFlags && analysisResults.redFlags.length > 0 && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Important Health Notice</AlertTitle>
+                <AlertDescription>
+                  Some of your symptoms may require immediate medical attention. Please consider consulting a healthcare provider promptly.
+                </AlertDescription>
+              </Alert>
+            )}
             
             <Separator />
             

@@ -13,9 +13,13 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { LlmService } from '@/services/LlmService';
 import { Loader2 } from 'lucide-react';
+import { SYMPTOMS, SYMPTOM_CATEGORIES, SymptomCategory, formatSymptomName } from '@/utils/symptomCategories';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface FormValues {
   name: string;
+  customSymptom: string;
+  category: SymptomCategory;
   severity: number;
   notes: string;
   freeText?: string;
@@ -27,10 +31,14 @@ function SymptomTracker() {
   const { toast } = useToast();
   const [isUsingFreeText, setIsUsingFreeText] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<SymptomCategory>("Physical");
+  const [isCustomSymptom, setIsCustomSymptom] = useState(false);
   
   const form = useForm<FormValues>({
     defaultValues: {
       name: '',
+      customSymptom: '',
+      category: "Physical",
       severity: 3,
       notes: '',
       freeText: '',
@@ -49,7 +57,7 @@ function SymptomTracker() {
           addSymptom({
             name: symptom.name,
             severity: symptom.severity,
-            notes: `${data.notes}\nCategory: ${symptom.possibleCategory}`,
+            notes: `${data.notes ? data.notes + '\n' : ''}Category: ${symptom.possibleCategory}`,
           });
         });
         
@@ -57,6 +65,14 @@ function SymptomTracker() {
           title: "Symptoms recorded",
           description: `${results.extractedSymptoms.length} symptoms recorded from your description.`,
         });
+        
+        if (results.redFlags && results.redFlags.length > 0) {
+          toast({
+            title: "Important Health Notice",
+            description: "Some of your symptoms may require medical attention. Please consult a healthcare provider.",
+            variant: "destructive",
+          });
+        }
       } catch (error) {
         console.error('Error analyzing symptoms:', error);
         toast({
@@ -70,20 +86,25 @@ function SymptomTracker() {
       }
     } else {
       // Add the single manually entered symptom
+      const symptomName = isCustomSymptom ? data.customSymptom : data.name;
+      
       addSymptom({
-        name: data.name,
+        name: symptomName,
         severity: data.severity,
-        notes: data.notes,
+        notes: `${data.notes}\nCategory: ${data.category}`,
       });
       
       toast({
         title: "Symptom recorded",
-        description: `${data.name} has been added to your symptoms.`,
+        description: `${symptomName} has been added to your symptoms.`,
       });
       
       navigate('/');
     }
   };
+  
+  // Filter symptoms by selected category
+  const filteredSymptoms = SYMPTOMS.filter(symptom => symptom.category === selectedCategory);
   
   return (
     <Layout>
@@ -149,13 +170,79 @@ function SymptomTracker() {
                   <>
                     <FormField
                       control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Symptom Category</FormLabel>
+                          <Select 
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setSelectedCategory(value as SymptomCategory);
+                              form.setValue('name', '');
+                            }} 
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {SYMPTOM_CATEGORIES.map((category) => (
+                                <SelectItem key={category} value={category}>
+                                  {category} Symptoms
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Symptom Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Headache, Dizziness, Fatigue" {...field} />
-                          </FormControl>
+                          <FormLabel>Symptom</FormLabel>
+                          <div className="flex items-center mb-2">
+                            <Button
+                              type="button"
+                              variant="link"
+                              className="p-0 h-auto text-sm text-muted-foreground"
+                              onClick={() => setIsCustomSymptom(!isCustomSymptom)}
+                            >
+                              {isCustomSymptom ? "Select from list" : "Enter custom symptom"}
+                            </Button>
+                          </div>
+                          
+                          {isCustomSymptom ? (
+                            <FormField
+                              control={form.control}
+                              name="customSymptom"
+                              render={({ field }) => (
+                                <FormControl>
+                                  <Input placeholder="Enter symptom name" {...field} />
+                                </FormControl>
+                              )}
+                            />
+                          ) : (
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a symptom" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {filteredSymptoms.map((symptom) => (
+                                  <SelectItem key={symptom.id} value={symptom.name}>
+                                    {formatSymptomName(symptom)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -223,7 +310,15 @@ function SymptomTracker() {
                   <Button 
                     type="submit"
                     className="sm:flex-1"
-                    disabled={isAnalyzing || (isUsingFreeText ? !form.getValues('freeText') : !form.getValues('name'))}
+                    disabled={isAnalyzing || (
+                      isUsingFreeText 
+                        ? !form.getValues('freeText') 
+                        : (
+                          isCustomSymptom 
+                            ? !form.getValues('customSymptom')
+                            : !form.getValues('name')
+                        )
+                    )}
                   >
                     {isAnalyzing ? (
                       <>
