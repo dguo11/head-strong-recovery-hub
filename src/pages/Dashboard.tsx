@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RecoveryToolCard } from '@/components/recovery/RecoveryToolCard';
 import { SymptomChart } from '@/components/recovery/SymptomChart';
 import { FeedbackDialog } from '@/components/feedback/FeedbackDialog';
-import { Activity, Book, CheckCircle, ListTodo, MessageSquare, FileText, Timer, User } from 'lucide-react';
+import { Activity, Book, CheckCircle, ListTodo, MessageSquare, FileText, Timer, User, FileUp } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 
@@ -60,6 +61,12 @@ function Dashboard() {
   ];
   
   const recoveryTools = [
+    {
+      title: "Document Analyzer",
+      description: "Analyze medical documents for symptoms",
+      icon: <FileUp className="h-5 w-5" />,
+      onClick: () => navigate('/documents'),
+    },
     {
       title: "My Personal Recovery Tools",
       description: "Personalized recovery strategies and tools",
@@ -140,6 +147,10 @@ function Dashboard() {
                 </Button>
                 <Button variant="outline" onClick={() => navigate('/education')}>
                   Learn About Concussions
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/documents')}>
+                  <FileUp className="mr-2 h-4 w-4" />
+                  Analyze Medical Documents
                 </Button>
               </div>
             </CardContent>

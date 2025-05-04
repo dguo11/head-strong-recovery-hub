@@ -10,6 +10,7 @@ import Onboarding from "./pages/Onboarding";
 import NotFoundPage from "./pages/NotFoundPage";
 import SymptomTracker from "./pages/SymptomTracker";
 import EducationPage from "./pages/EducationPage";
+import DocumentAnalyzer from "./pages/DocumentAnalyzer";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/symptoms/track" element={<SymptomTracker />} />
             <Route path="/education" element={<EducationPage />} />
+            <Route path="/documents" element={<DocumentAnalyzer />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
