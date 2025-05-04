@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RecoveryToolCard } from '@/components/recovery/RecoveryToolCard';
 import { SymptomChart } from '@/components/recovery/SymptomChart';
 import { FeedbackDialog } from '@/components/feedback/FeedbackDialog';
-import { Activity, Book, CheckCircle, ListTodo, MessageSquare, Notes, Timer, User } from 'lucide-react';
+import { Activity, Book, CheckCircle, ListTodo, MessageSquare, FileText, Timer, User } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 
@@ -106,7 +105,7 @@ function Dashboard() {
     {
       title: "My Personal Notes",
       description: "Keep journal entries about your recovery",
-      icon: <Notes className="h-5 w-5" />,
+      icon: <FileText className="h-5 w-5" />,
       onClick: () => navigate('/tools/notes'),
     },
   ];
